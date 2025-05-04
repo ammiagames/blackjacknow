@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Blackjack Game</title>
+    <style>
+        body {
+            background-color: #0b3d0b;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            margin-top: 20px;
+            font-size: 3em;
+        }
+
+        .table {
+            padding: 30px;
+            max-width: 800px;
+            margin: auto;
+            background-color: #145214;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .info {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .card-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            display: none;
+            background: #fff;
+            color: #000;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 1em;
+            white-space: pre;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.6);
+            min-width: 75px;
+        }
+
+        .card.visible {
+            display: inline-block;
+        }
+
+        .hand-title {
+            font-size: 1.5em;
+            margin: 20px 0 10px;
+        }
+
+        .button-group form {
+            display: inline-block;
+            margin: 10px;
+        }
+
+        button {
+            background-color: #f2b700;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        button:hover {
+            background-color: #ffcf40;
+        }
+
+        #game-result {
+            margin-top: 30px;
+            font-size: 1.5em;
+            background-color: #fff;
+            color: #000;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        a {
+            color: #004eff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Blackjack</h1>
+
+    <div class="table">
+
+        <div class="info">
+            <p>Chip Count: {{ game.chip_count }}</p>
+            <p>Bet: {{ game.bet_amount }}</p>
+        </div>
+
+        <div class="hand-title">Your Hand:</div>
+        <p>Total: {% if player_total > 21 %}<strong style="color: red;">TOO MANY!</strong> {% endif %}{{ player_total }}
+        </p>
+        <div class="card-container">
+            {% for card in player_cards %}
+            <div class="card visible">+-----+
+| {{ card.rank }}   |
+|     |
+|   {{ card.suit }} |
++-----+</div>
+            {% endfor %}
+        </div>
+
+        <div class="hand-title">Dealer's Hand:</div>
+        <div class="card-container" id="dealer-hand">
+            {% for card in dealer_cards %}
+            <div class="card{% if game.is_active %} visible{% endif %}">+-----+
+| {{ card.rank }}   |
+|     |
+|   {{ card.suit }} |
++-----+</div>
+            {% endfor %}
+            {% if hide_dealer_card %}
+            <div class="card visible">+-----+
+| ??? |
+| ??? |
+| ??? |
++-----+</div>
+            {% endif %}
+        </div>
+
+        {% if game.is_active %}
+        <div class="button-group">
+            <form method="post" action="{% url 'game:hit' %}">
+                {% csrf_token %}
+                <button type="submit">Hit</button>
+            </form>
+
+            <form method="post" action="{% url 'game:stand' %}">
+                {% csrf_token %}
+                <button type="submit">Stand</button>
+            </form>
+        </div>
+        {% else %}
+        <div id="game-result">
+            <p><strong>{{ game.result }}</strong></p>
+        
+            <form method="post" action="{% url 'game:start_game' %}">
+                {% csrf_token %}
+                <label for="bet">Wager for Next Hand:</label>
+                <input type="number" name="bet" id="bet" value="10" min="1" max="{{ game.chip_count }}" required>
+                <button type="submit">Place Bet & Start New Game</button>
+            </form>
+        
+            <p><a href="{% url 'game:start_game' %}">Start New Game</a></p>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const dealerCards = document.querySelectorAll('#dealer-hand .card');
+                dealerCards.forEach((card, index) => {
+                    if (index === 0) {
+                        card.classList.add('visible');
+                    } else {
+                        setTimeout(() => {
+                            card.classList.add('visible');
+                            if (index === dealerCards.length - 1) {
+                                document.getElementById('game-result').style.display = 'block';
+                            }
+                        }, (index - 1) * 300);
+                    }
+                });
+            });
+        </script>
+        {% endif %}
+
+    </div>
+</body>
+
+</html>

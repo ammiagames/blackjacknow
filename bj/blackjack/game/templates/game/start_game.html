@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Blackjack - Start Game</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2b2b2b;
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .lobby-container {
+            background-color: #1e1e1e;
+            border: 2px solid #444;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+
+        .chip-count {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #ffd700;
+        }
+
+        .bet-input {
+            margin-bottom: 20px;
+        }
+
+        input[type="number"] {
+            padding: 10px;
+            font-size: 1em;
+            width: 100px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #28a745;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .error {
+            color: #ff4d4d;
+            margin-bottom: 15px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="lobby-container">
+        <h1>🎴 Blackjack Lobby</h1>
+
+        {% if game %}
+            <div class="chip-count">Your Chips: {{ game.chip_count }}</div>
+        {% else %}
+            <div class="chip-count">Starting Chips: 1000</div>
+        {% endif %}
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="bet-input">
+                <input type="number" name="bet" min="1" placeholder="Enter Bet" required>
+            </div>
+            <button type="submit">Start Game</button>
+        </form>
+        <form method="post" action="{% url 'game:reset_chips' %}">
+            {% csrf_token %}
+            <button type="submit" style="background-color: #dc3545; margin-top: 10px;">Reset Chips</button>
+        </form>
+
+        <div class="footer">Good luck! Try to beat the dealer 🃏</div>
+    </div>
+
+</body>
+
+</html>
