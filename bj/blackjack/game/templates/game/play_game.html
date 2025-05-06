@@ -112,20 +112,11 @@
             <p>Bet: {{ game.bet_amount }}</p>
         </div>
 
-        <div class="hand-title">Your Hand:</div>
-        <p>Total: {% if player_total > 21 %}<strong style="color: red;">TOO MANY!</strong> {% endif %}{{ player_total }}
-        </p>
-        <div class="card-container">
-            {% for card in player_cards %}
-            <div class="card visible">+-----+
-| {{ card.rank }}   |
-|     |
-|   {{ card.suit }} |
-+-----+</div>
-            {% endfor %}
-        </div>
-
         <div class="hand-title">Dealer's Hand:</div>
+        {% if hide_dealer_card %}
+        <p><strong>Dealer is showing: {{ dealer_cards.0.rank }}</strong></p>
+        {% endif %}
+        <p id="dealer-total" style="font-size: 1.2em; margin-top: 10px;"></p>
         <div class="card-container" id="dealer-hand">
             {% for card in dealer_cards %}
             <div class="card{% if game.is_active %} visible{% endif %}">+-----+
@@ -143,18 +134,55 @@
             {% endif %}
         </div>
 
-        {% if game.is_active %}
-        <div class="button-group">
-            <form method="post" action="{% url 'game:hit' %}">
-                {% csrf_token %}
-                <button type="submit">Hit</button>
-            </form>
-
-            <form method="post" action="{% url 'game:stand' %}">
-                {% csrf_token %}
-                <button type="submit">Stand</button>
-            </form>
+        <div class="hand-title">Your Hand:</div>
+        <p>Total: {% if player_total > 21 %}<strong style="color: red;">TOO MANY!</strong> {% endif %}{{ player_total }}
+        </p>
+        <div class="card-container">
+            {% for card in player_cards %}
+            <div class="card visible">+-----+
+| {{ card.rank }}   |
+|     |
+|   {{ card.suit }} |
++-----+</div>
+            {% endfor %}
         </div>
+        {% if messages %}
+            {% for message in messages %}
+                <p>{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+        {% if game.is_active %}
+            {% if offer_insurance %}
+            <p><strong>Dealer shows Ace. Will you take insurance?</strong></p>
+            <div class="button-group">
+                <form method="post" action="{% url 'game:insurance' %}">
+                    {% csrf_token %}
+                    <button type="submit" name="insurance_choice" value="yes">Yes</button>
+                    <button type="submit" name="insurance_choice" value="no">No</button>
+                </form>
+            </div>
+            {% elif offer_even_money %}
+            <p><strong>Dealer shows Ace. Will you take even money?</strong></p>
+            <div class="button-group">
+                <form method="post" action="{% url 'game:even_money' %}">
+                    {% csrf_token %}
+                    <button type="submit" name="even_money_choice" value="yes">Yes</button>
+                    <button type="submit" name="even_money_choice" value="no">No</button>
+                </form>
+            </div>
+            {% else %}
+            <div class="button-group">
+                <form method="post" action="{% url 'game:hit' %}">
+                    {% csrf_token %}
+                    <button type="submit">Hit</button>
+                </form>
+
+                <form method="post" action="{% url 'game:stand' %}">
+                    {% csrf_token %}
+                    <button type="submit">Stand</button>
+                </form>
+            </div>
+            {% endif %}
         {% else %}
         <div id="game-result">
             <p><strong>{{ game.result }}</strong></p>
@@ -170,21 +198,51 @@
         </div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const dealerCards = document.querySelectorAll('#dealer-hand .card');
-                dealerCards.forEach((card, index) => {
-                    if (index === 0) {
-                        card.classList.add('visible');
-                    } else {
-                        setTimeout(() => {
+            function calculateCardValue(rank) {
+                    if (["J", "Q", "K", "T"].includes(rank)) return 10;
+                    if (rank === "A") return 11;
+                    return parseInt(rank);
+                }
+
+                document.addEventListener('DOMContentLoaded', () => {
+                    const dealerCards = document.querySelectorAll('#dealer-hand .card');
+                    const dealerTotalEl = document.getElementById('dealer-total');
+                    let total = 0;
+                    let aces = 0;
+
+                    dealerCards.forEach((card, index) => {
+                        if (index === 0) {
                             card.classList.add('visible');
-                            if (index === dealerCards.length - 1) {
-                                document.getElementById('game-result').style.display = 'block';
+                            const rank = card.innerText.match(/\|\s(.+?)\s{2,}\|/)[1].trim();
+                            total += calculateCardValue(rank);
+                            if (rank == 'A') {
+                                aces += 1;
                             }
-                        }, (index - 1) * 300);
-                    }
+                            while (total > 21 && aces > 0) {
+                                total -= 10;
+                                aces -= 1;
+                            }
+                            dealerTotalEl.textContent = `Dealer Total: ${total}`;
+                        } else {
+                            setTimeout(() => {
+                                card.classList.add('visible');
+                                const rank = card.innerText.match(/\|\s(.+?)\s{2,}\|/)[1].trim();
+                                total += calculateCardValue(rank);
+                                if (rank == 'A') {
+                                    aces += 1;
+                                }
+                                while (total > 21 && aces > 0) {
+                                    total -= 10;
+                                    aces -= 1;
+                                }
+                                dealerTotalEl.textContent = `Dealer Total: ${total}`;
+                                if (index === dealerCards.length - 1) {
+                                    document.getElementById('game-result').style.display = 'block';
+                                }
+                            }, (index - 1) * 300);
+                        }
+                    });
                 });
-            });
         </script>
         {% endif %}
 

@@ -9,4 +9,6 @@ urlpatterns = [
     path('hit/', views.hit, name='hit'),
     path('stand/', views.stand, name='stand'),
     path('reset/', views.reset_chips, name='reset_chips'),
+    path('insurance/', views.insurance, name='insurance'),
+    path('even_money/', views.even_money, name='even_money'),
 ]
