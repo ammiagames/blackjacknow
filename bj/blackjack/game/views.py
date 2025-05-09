@@ -2,6 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from .models import GameSession, Deck, Card, CardInHand, HandHistory
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib import messages
+from django.db import transaction
+
+import math
 
 # Start a new game
 def start_game(request):
@@ -19,14 +22,6 @@ def start_game(request):
         dealer_card2 = deck.draw_card()
         player_cards = [player_card1, player_card2]
         dealer_cards = [dealer_card1, dealer_card2]
-        dealer_card1.rank = 'A'
-        dealer_card1.save()
-        dealer_card2.rank = 'T'
-        dealer_card2.save()
-        player_card1.rank = 'A'
-        player_card1.save()
-        player_card2.rank = 'T'
-        player_card2.save()
         player_value = calculate_hand_value(player_cards)
         dealer_value = calculate_hand_value(dealer_cards)
 
@@ -68,18 +63,21 @@ def start_game(request):
                 request.session['offer_even_money'] = True
             else:
                 request.session['offer_insurance'] = True
-        
-        # 10 blackjack path
-        if dealer_card1.rank in ['J', 'Q', 'K', 'T'] and dealer_card2.rank == 'A':
+        elif dealer_card1.rank in ['J', 'Q', 'K', 'T'] and dealer_card2.rank == 'A':
             game.is_active = False
             if player_value == 21:
                 game.result = "Dealer and player have blackjack. Push."
                 game.chip_count += game.bet_amount
             else:
                 game.result = "Dealer has blackjack"
-            game.save()
+        else:
+            if player_value == 21:
+                game.result = "Congrats! You have Blackjack!"
+                game.chip_count += math.floor(game.bet_amount * 2.5)
+                game.is_active = False
             
         request.session['game_id'] = game.id
+        game.save()
         return redirect('game:play_game')
     game = None
     if 'game_id' in request.session:
@@ -138,7 +136,9 @@ def play_game(request):
         'dealer_cards': dealer_cards if not game.is_active else dealer_cards[:1],
         'hide_dealer_card': game.is_active,
         'offer_insurance': offer_insurance,
-        'offer_even_money': offer_even_money
+        'offer_even_money': offer_even_money,
+        'can_double': len(player_cards) == 2,
+        'can_split': player_cards[0].rank == player_cards[1].rank
     }
     print("offer_even_money")
     print(offer_even_money)
@@ -148,6 +148,38 @@ def play_game(request):
     
     # game.save()
     return render(request, 'game/play_game.html', context)
+
+def double(request):
+    game_id = request.session.get('game_id')
+    hand_id = request.session.get('hand_id')
+    game = get_object_or_404(GameSession, id=game_id)
+
+    # Ensure valid double down condition: exactly 2 player cards
+    player_cards = [cih.card for cih in game.cardinhand_set.filter(is_player=True, position=hand_id)]
+    if len(player_cards) != 2:
+        messages.error(request, "Double down is only allowed with exactly two cards.")
+        return redirect('game:play_game')
+
+    if game.chip_count < game.bet_amount:
+        messages.error(request, "Not enough chips to double down.")
+        return redirect('game:play_game')
+
+    with transaction.atomic():
+        # Double the bet
+        game.chip_count -= game.bet_amount
+        game.bet_amount *= 2
+        game.save()
+
+        # Draw one card
+        new_card = game.deck.draw_card()
+        CardInHand.objects.create(game_session=game, card=new_card, is_player=True, position=hand_id)
+
+    return redirect('game:stand')  # Stand automatically after double down
+
+
+
+def split(request):
+    pass
 
 def insurance(request):
     game_id = request.session.get('game_id')
@@ -198,7 +230,9 @@ def even_money(request):
             game.chip_count += (game.bet_amount)
             game.is_active = False
         else:
-            messages.info(request, "Even money not taken. No one's home.")
+            game.result = "No one's home!"
+            game.chip_count += math.floor(game.bet_amount * 2.5)
+            game.is_active = False
     game.save()
     return redirect('game:play_game')
 

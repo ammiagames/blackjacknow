@@ -11,4 +11,6 @@ urlpatterns = [
     path('reset/', views.reset_chips, name='reset_chips'),
     path('insurance/', views.insurance, name='insurance'),
     path('even_money/', views.even_money, name='even_money'),
+    path('double/', views.double, name='double'),
+    path('split/', views.split, name='split'),
 ]
