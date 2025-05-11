@@ -1,3 +1,5 @@
+from .constants.constants import FACE_CARD_SET
+
 import random
 
 def calculate_hand_value(cards):
@@ -17,3 +19,11 @@ def calculate_hand_value(cards):
         value -= 10
         aces -= 1
     return value
+
+def can_split_hand(cards):
+    if len(cards) != 2: return False
+
+    if cards[0].rank in FACE_CARD_SET and cards[1].rank in FACE_CARD_SET:
+        return True
+    
+    return cards[0].rank == cards[1].rank

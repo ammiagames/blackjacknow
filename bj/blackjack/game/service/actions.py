@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from ..models import GameSession, Deck, Card, CardInHand, HandHistory, Hand
 from ..constants.constants import GAME_ID, HAND_ID, HAND_IDS, HAND_INDEX
-from ..utils import calculate_hand_value
+from ..utils import calculate_hand_value, can_split_hand
 from django.db import transaction
 from django.contrib import messages
 
@@ -185,10 +185,13 @@ def split(request):
     game = get_object_or_404(GameSession, id=game_id)
     original_hand = get_object_or_404(Hand, id=hand_id, game_session=game)
 
-    player_cards = list(original_hand.cards.filter(is_player=True).order_by('position'))
+    player_cih = list(original_hand.cards.filter(is_player=True).order_by('position'))
+    player_cards = []
+    for cih in player_cih:
+        player_cards.append(cih.card)
 
     # Validate split conditions
-    if len(player_cards) != 2 or player_cards[0].card.rank != player_cards[1].card.rank:
+    if not can_split_hand(player_cards):
         messages.error(request, "You can only split with two cards of the same rank.")
         return redirect('game:play_hand')
     elif game.chip_count < original_hand.bet_amount:
@@ -207,7 +210,7 @@ def split(request):
         )
 
         # Move one card to new hand
-        card_to_move = player_cards[1]
+        card_to_move = player_cih[1]
         card_to_move.hand = new_hand
         card_to_move.position = 0
         card_to_move.save()
@@ -223,7 +226,7 @@ def split(request):
         hands.append(new_hand.id)
         request.session[HAND_IDS] = hands
 
-        if player_cards[0].card.rank == 'A' == player_cards[1].card.rank:
+        if player_cih[0].card.rank == 'A' == player_cih[1].card.rank:
             request.session[HAND_INDEX] = hand_id + 2
             return redirect('game:stand')
 

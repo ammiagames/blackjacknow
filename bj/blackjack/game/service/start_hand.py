@@ -37,6 +37,10 @@ def start_hand(request):
         # Draw initial cards
         player_card1, player_card2 = deck.draw_card(), deck.draw_card()
         dealer_card1, dealer_card2 = deck.draw_card(), deck.draw_card()
+        player_card1.rank = 'T'
+        player_card1.save()
+        player_card2.rank = 'Q'
+        player_card2.save()
         # Save cards to CardInHand
         CardInHand.objects.bulk_create([
             CardInHand(hand=hand, card=player_card1, position=0, is_player=True),
