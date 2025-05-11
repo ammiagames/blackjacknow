@@ -30,6 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Show results after the last card is revealed
             if (index === dealerCards.length - 1) {
+                const chipCountEl = document.getElementById('chip-count');
+                const chipCount = chipCountEl.dataset.chip;
+                chipCountEl.textContent = `Chip Count: ${chipCount}`;
+
                 document.getElementById('game-result').style.display = 'block';
                 document.querySelectorAll('.hand-result').forEach(el => {
                     el.style.display = 'block';

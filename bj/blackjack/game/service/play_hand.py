@@ -9,6 +9,7 @@ def play_hand(request):
     game_id = request.session.get(GAME_ID)
     offer_insurance = request.session.get('offer_insurance', False)
     offer_even_money = request.session.get('offer_even_money', False)
+    starting_chip_stack = request.session.get('starting_chip_stack', -1)
 
     if not game_id:
         return redirect('game:start_hand')
@@ -51,6 +52,7 @@ def play_hand(request):
         'hide_dealer_card': game.is_active,
         'offer_insurance': offer_insurance,
         'offer_even_money': offer_even_money,
+        'starting_chip_stack': starting_chip_stack,
     }
 
     return render(request, 'game/play_hand.html', context)

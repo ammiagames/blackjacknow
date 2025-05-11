@@ -12,7 +12,7 @@
     <h1>Blackjack</h1>
     <div class="table">
         <div class="info">
-            <p>Chip Count: {{ game.chip_count }}</p>
+            <p id="chip-count" data-chip="{{ game.chip_count }}">Chip Count: {{ starting_chip_stack }}</p>
         </div>
 
         <div class="hand-title">Dealer's Hand:</div>

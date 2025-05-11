@@ -146,12 +146,11 @@ def double(request):
     hand_id = hands[request.session[HAND_INDEX]]
     game = get_object_or_404(GameSession, id=game_id)
     hand = get_object_or_404(Hand, id=hand_id, game_session=game)
+    request.session['starting_chip_stack'] -= hand.bet_amount
 
     player_cards = [cih.card for cih in hand.cards.filter(is_player=True).order_by('position')]
 
     # Validate double down conditions
-
-    # TODO: this is tripped up even when there ar eonly two cards
     if len(player_cards) != 2:
         messages.error(request, "Double down is only allowed with exactly two cards.")
         return redirect('game:play_hand')
@@ -184,6 +183,7 @@ def split(request):
     hand_id = hands[request.session[HAND_INDEX]]
     game = get_object_or_404(GameSession, id=game_id)
     original_hand = get_object_or_404(Hand, id=hand_id, game_session=game)
+    request.session['starting_chip_stack'] -= original_hand.bet_amount
 
     player_cih = list(original_hand.cards.filter(is_player=True).order_by('position'))
     player_cards = []

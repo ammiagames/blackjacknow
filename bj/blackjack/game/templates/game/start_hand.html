@@ -17,62 +17,72 @@
             height: 100vh;
         }
 
-        .lobby-container {
-            background-color: #1e1e1e;
-            border: 2px solid #444;
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            width: 400px;
+        .table-container {
             text-align: center;
+            width: 800px;
         }
 
-        h1 {
-            font-size: 2em;
-            margin-bottom: 20px;
+        .blackjack-table {
+            position: relative;
+            width: 700px;
+            height: 350px;
+            background: radial-gradient(ellipse at bottom, #006400 0%, #013220 100%);
+            border-radius: 0 0 350px 350px;
+            margin: 0 auto 40px auto;
+            box-shadow: inset 0 20px 50px rgba(0, 0, 0, 0.5);
         }
 
-        .chip-count {
-            font-size: 1.2em;
+        .chip-display {
+            font-size: 1.5em;
             margin-bottom: 20px;
             color: #ffd700;
         }
 
-        .bet-input {
-            margin-bottom: 20px;
-        }
-
-        input[type="number"] {
-            padding: 10px;
-            font-size: 1em;
-            width: 100px;
-            border-radius: 8px;
-            border: none;
-            outline: none;
-        }
-
-        button {
+        .seat {
+            position: absolute;
             padding: 10px 20px;
             font-size: 1em;
-            background-color: #28a745;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
+            background-color: #444;
             color: white;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
-        button:hover {
-            background-color: #218838;
+        .seat:hover {
+            background-color: #666;
         }
 
-        .error {
-            color: #ff4d4d;
-            margin-bottom: 15px;
+        .seat-left {
+            bottom: 30px;
+            left: 80px;
+        }
+
+        .seat-center {
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .seat-right {
+            bottom: 30px;
+            right: 80px;
+        }
+
+        .reset-button {
+            background-color: #dc3545;
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            margin-top: 20px;
         }
 
         .footer {
-            margin-top: 30px;
+            margin-top: 20px;
             font-size: 0.9em;
             color: #aaa;
         }
@@ -80,35 +90,41 @@
 </head>
 
 <body>
+    <div class="table-container">
+        <div class="chip-display">Your Chips: {{ game.chip_count }}</div>
 
-    <div class="lobby-container">
-        <h1>🎴 Blackjack Lobby</h1>
+        <div class="blackjack-table">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="seat" value="left">
+                <button class="seat seat-left">Seat 1</button>
+            </form>
 
-        {% if game %}
-            <div class="chip-count">Your Chips: {{ game.chip_count }}</div>
-        {% else %}
-            <div class="chip-count">Starting Chips: 1000</div>
-        {% endif %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="seat" value="center">
+                <button class="seat seat-center">Seat 2</button>
+            </form>
+
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="seat" value="right">
+                <button class="seat seat-right">Seat 3</button>
+            </form>
+        </div>
 
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
 
-        <form method="post">
-            {% csrf_token %}
-            <div class="bet-input">
-                <input type="number" name="bet" min="1" placeholder="Enter Bet" required>
-            </div>
-            <button type="submit">Start Game</button>
-        </form>
         <form method="post" action="{% url 'game:reset_chips' %}">
             {% csrf_token %}
-            <button type="submit" style="background-color: #dc3545; margin-top: 10px;">Reset Chips</button>
+            <button type="submit" class="reset-button">Reset Chips</button>
         </form>
 
-        <div class="footer">Good luck! Try to beat the dealer 🃏</div>
+        <div class="footer">Choose a seat to start your hand 🎴</div>
     </div>
-
 </body>
+
 
 </html>

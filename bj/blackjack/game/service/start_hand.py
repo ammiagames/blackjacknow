@@ -61,6 +61,7 @@ def start_hand(request):
         request.session[HAND_IDS] = [hand.id]
         request.session['offer_even_money'] = False
         request.session['offer_insurance'] = False
+        request.session['starting_chip_stack'] = game.chip_count
 
         # Offer insurance / even money logic
         if dealer_card1.rank == 'A':
