@@ -72,6 +72,14 @@
             margin: 10px;
         }
 
+        .hidden {
+            display: none
+        }
+
+        .hand-result {
+            display: none;
+        }
+
         button {
             background-color: #f2b700;
             color: #000;
@@ -120,7 +128,7 @@
         <p id="dealer-total" style="font-size: 1.2em; margin-top: 10px;"></p>
         <div class="card-container" id="dealer-hand">
             {% for card in dealer_cards %}
-            <div class="card{% if game.is_active %} visible{% endif %}">
+            <div class="card{% if forloop.counter != 1 %} hidden{% endif %}">
                 <div class="top-left" style="align-self: flex-start">{{ card.rank }}<br>{{ card.suit }}</div>
                 <div class="bottom-right" style="align-self: flex-end;">{{ card.suit }}<br>{{ card.rank }}</div>
             </div>
@@ -131,17 +139,32 @@
             {% endif %}
         </div>
 
-        <div class="hand-title">Your Hand:</div>
-        <p>Total: {% if player_total > 21 %}<strong style="color: red;">TOO MANY!</strong> {% endif %}{{ player_total }}
+        </p>
+        {% for hand in player_hands %}
+        <div class="hand-title">
+            {% if player_hands|length > 1 %}Hand {{ forloop.counter }}{% endif %}
+            <p class="hand-result"><strong>{{ hand.result }}</strong></p>
+            {% if hand.is_active%}
+            <span style="color: limegreen;">← Playing Now</span>
+            {% endif %}
+        </div>
+        <p>
+            Total:
+            {% if hand.total > 21 %}
+            <strong style="color: red;">TOO MANY!</strong>
+            {% endif %}
+            {{ hand.value }}
         </p>
         <div class="card-container">
-            {% for card in player_cards %}
+            {% for card in hand.cards %}
             <div class="card visible">
                 <div class="top-left" style="align-self: flex-start">{{ card.rank }}<br>{{ card.suit }}</div>
                 <div class="bottom-right" style="align-self: flex-end;">{{ card.suit }}<br>{{ card.rank }}</div>
             </div>
             {% endfor %}
         </div>
+        {% endfor %}
+
 
         {% if messages %}
         {% for message in messages %}<p>{{ message }}</p>{% endfor %}
@@ -183,7 +206,7 @@
                 <button type="submit">Double</button>
             </form>
             {% endif %}
-        
+
             {% if can_split %}
             <form method="post" action="{% url 'game:split' %}">
                 {% csrf_token %}
@@ -194,14 +217,13 @@
         {% endif %}
         {% else %}
         <div id="game-result">
-            <p><strong>{{ game.result }}</strong></p>
-            <form method="post" action="{% url 'game:start_game' %}">
+            <form method="post" action="{% url 'game:start_hand' %}">
                 {% csrf_token %}
                 <label for="bet">Wager for Next Hand:</label>
                 <input type="number" name="bet" id="bet" value="10" min="1" max="{{ game.chip_count }}" required>
                 <button type="submit">Place Bet & Start New Game</button>
             </form>
-            <p><a href="{% url 'game:start_game' %}">Start New Game</a></p>
+            <p><a href="{% url 'game:start_hand' %}">Start New Game</a></p>
         </div>
         <script>
             function calculateCardValue(rank) {
@@ -227,9 +249,13 @@
                             total -= 10;
                             aces--;
                         }
+                        card.classList.remove('hidden');
                         dealerTotalEl.textContent = `Dealer Total: ${total}`;
                         if (index === dealerCards.length - 1) {
                             document.getElementById('game-result').style.display = 'block';
+                            document.querySelectorAll('.hand-result').forEach(el => {
+                                el.style.display = 'block';
+                            })
                         }
                     }, index * 400);
                 });

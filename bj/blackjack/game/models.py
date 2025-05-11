@@ -50,27 +50,24 @@ class DeckCard(models.Model):
     def __str__(self):
         return f"{self.card} (pos {self.position})"
 
-
 class GameSession(models.Model):
     chip_count = models.IntegerField(default=1000)
-    bet_amount = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
-    result = models.CharField(max_length=20, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     deck = models.ForeignKey(Deck, on_delete=models.CASCADE)
 
+class Hand(models.Model):
+    game_session = models.ForeignKey(GameSession, on_delete=models.CASCADE, related_name='hands')
+    bet_amount = models.IntegerField()
+    result = models.CharField(max_length=50, blank=True)
+    # position = models.IntegerField()  # optional: which hand in order
+    is_current = models.BooleanField(default=False)  # useful for split tracking
 
 class CardInHand(models.Model):
-    game_session = models.ForeignKey(GameSession, on_delete=models.CASCADE)
+    hand = models.ForeignKey(Hand, on_delete=models.CASCADE, related_name='cards')
     card = models.ForeignKey(Card, on_delete=models.CASCADE)
-    is_player = models.BooleanField(default=False)
+    is_player = models.BooleanField(default=True)
     position = models.IntegerField()
-
-    class Meta:
-        ordering = ['position']
-
-    def __str__(self):
-        return f"{'Player' if self.is_player else 'Dealer'}: {self.card}"
 
 class HandHistory(models.Model):
     game_session = models.ForeignKey('GameSession', on_delete=models.CASCADE)
