@@ -53,6 +53,7 @@ def play_hand(request):
         'offer_insurance': offer_insurance,
         'offer_even_money': offer_even_money,
         'starting_chip_stack': starting_chip_stack,
+        'selected_seat': request.session.get('selected_seat', 'center'),
     }
 
     return render(request, 'game/play_hand.html', context)

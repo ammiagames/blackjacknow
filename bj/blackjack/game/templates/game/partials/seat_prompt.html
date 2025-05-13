@@ -1,0 +1,56 @@
+<div id="seat-prompt-overlay" class="overlay hidden">
+    <div class="prompt-box">
+        <form method="POST" action="{% url 'game:join_seat' %}">
+            {% csrf_token %}
+            <input type="hidden" id="seat-input" name="seat_id">
+
+            <label for="chip_amount">Enter chip amount:</label>
+            <input type="number" name="chip_amount" id="chip_amount" min="1" required>
+
+            <div class="actions" style="margin-top: 1rem;">
+                <button type="submit">Join Seat</button>
+                <button type="button" onclick="closePrompt()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .prompt-box {
+        background: #fff;
+        padding: 1.5rem;
+        border-radius: 10px;
+        width: 300px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    input[type="number"] {
+        width: 100%;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        box-sizing: border-box;
+    }
+
+    button {
+        padding: 0.5rem 1rem;
+        margin-right: 0.5rem;
+    }
+</style>
+  

@@ -1,0 +1,25 @@
+{% for hand in player_hands %}
+<div class="hand-title">
+    {% if player_hands|length > 1 %}Hand {{ forloop.counter }}{% endif %}
+    <p>Bet: {{ hand.bet_amount }}</p>
+    <p class="hand-result"><strong>{{ hand.result }}</strong></p>
+    {% if hand.is_active %}
+    <span style="color: limegreen;">← Playing Now</span>
+    {% endif %}
+</div>
+<p>
+    Total:
+    {% if hand.total > 21 %}
+    <strong style="color: red;">TOO MANY!</strong>
+    {% endif %}
+    {{ hand.value }}
+</p>
+<div class="card-container">
+    {% for card in hand.cards %}
+    <div class="card visible">
+        <div class="top-left" style="align-self: flex-start">{{ card.rank }}<br>{{ card.suit }}</div>
+        <div class="bottom-right" style="align-self: flex-end;">{{ card.suit }}<br>{{ card.rank }}</div>
+    </div>
+    {% endfor %}
+</div>
+{% endfor %}

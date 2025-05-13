@@ -1,90 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
+{% load static %}
 
 <head>
     <meta charset="UTF-8">
     <title>Blackjack - Start Game</title>
+    <link rel="stylesheet" href="{% static 'game/css/start_hand.css' %}">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #2b2b2b;
-            color: #f0f0f0;
+        /* Overlay styling */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            z-index: 1000;
         }
 
-        .table-container {
-            text-align: center;
-            width: 800px;
+        .prompt-box {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
         }
 
-        .blackjack-table {
-            position: relative;
-            width: 700px;
-            height: 350px;
-            background: radial-gradient(ellipse at bottom, #006400 0%, #013220 100%);
-            border-radius: 0 0 350px 350px;
-            margin: 0 auto 40px auto;
-            box-shadow: inset 0 20px 50px rgba(0, 0, 0, 0.5);
+        .hidden {
+            display: none;
         }
 
-        .chip-display {
-            font-size: 1.5em;
-            margin-bottom: 20px;
-            color: #ffd700;
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            box-sizing: border-box;
         }
 
-        .seat {
-            position: absolute;
-            padding: 10px 20px;
-            font-size: 1em;
-            border: none;
-            border-radius: 12px;
-            background-color: #444;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .seat:hover {
-            background-color: #666;
-        }
-
-        .seat-left {
-            bottom: 30px;
-            left: 80px;
-        }
-
-        .seat-center {
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .seat-right {
-            bottom: 30px;
-            right: 80px;
-        }
-
-        .reset-button {
-            background-color: #dc3545;
-            padding: 10px 20px;
-            font-size: 1em;
-            border-radius: 8px;
-            border: none;
-            color: white;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-
-        .footer {
-            margin-top: 20px;
-            font-size: 0.9em;
-            color: #aaa;
+        button {
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
         }
     </style>
 </head>
@@ -94,23 +52,9 @@
         <div class="chip-display">Your Chips: {{ game.chip_count }}</div>
 
         <div class="blackjack-table">
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="seat" value="left">
-                <button class="seat seat-left">Seat 1</button>
-            </form>
-
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="seat" value="center">
-                <button class="seat seat-center">Seat 2</button>
-            </form>
-
-            <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="seat" value="right">
-                <button class="seat seat-right">Seat 3</button>
-            </form>
+            <button type="button" class="seat seat-left" onclick="showSeatPrompt('left')">Seat 1</button>
+            <button type="button" class="seat seat-center" onclick="showSeatPrompt('center')">Seat 2</button>
+            <button type="button" class="seat seat-right" onclick="showSeatPrompt('right')">Seat 3</button>
         </div>
 
         {% if error %}
@@ -124,7 +68,33 @@
 
         <div class="footer">Choose a seat to start your hand 🎴</div>
     </div>
-</body>
 
+    <!-- Modal for chip input -->
+    <div id="seat-prompt-overlay" class="overlay hidden">
+        <div class="prompt-box">
+            <form method="POST" action="{% url 'game:join_seat' %}">
+                {% csrf_token %}
+                <input type="hidden" name="seat_id" id="seat-input">
+                <label for="chip_amount">Enter chip amount:</label>
+                <input type="number" name="chip_amount" id="chip_amount" min="1" required>
+                <div>
+                    <button type="submit">Join Seat</button>
+                    <button type="button" onclick="closePrompt()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showSeatPrompt(seatId) {
+            document.getElementById("seat-input").value = seatId;
+            document.getElementById("seat-prompt-overlay").classList.remove("hidden");
+        }
+
+        function closePrompt() {
+            document.getElementById("seat-prompt-overlay").classList.add("hidden");
+        }
+    </script>
+</body>
 
 </html>

@@ -268,3 +268,12 @@ def set_hand_results(hands, dealer_value, game):
         )
     game.save()
     
+def join_seat(request):
+    seat_id = request.POST.get('seat_id')
+    chip_amount = request.POST.get('chip_amount')
+
+    # You would validate and store this info properly here
+    request.session['seat_id'] = seat_id
+    request.session['chips'] = int(chip_amount)
+
+    return redirect('game:start_hand')
