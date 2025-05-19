@@ -3,6 +3,7 @@ from .service.reset_chip_stack import reset_chip_stack
 from .service.play_hand import play_hand
 from django.views.decorators.http import require_POST
 from .service.actions import double, split, insurance, even_money, hit, stand, join_seat
+from .service.seat_selection import seat_selection
 
 # Start a new game
 def start_hand_view(request):
@@ -34,6 +35,9 @@ def hit_view(request):
 # Handle player stand
 def stand_view(request):
     return stand(request)
+
+def seat_selection_view(request):
+    return seat_selection(request)
 
 @require_POST
 def join_seat_view(request):

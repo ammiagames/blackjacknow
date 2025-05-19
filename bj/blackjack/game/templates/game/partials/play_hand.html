@@ -1,0 +1,41 @@
+<div id="play-hand-overlay" class="overlay hidden">
+    <div class="play-hand-content">
+        <h2>Blackjack</h2>
+
+        <div class="info">
+            <p id="chip-count" data-chip="{{ game.chip_count }}">Chip Count: {{ starting_chip_stack }}</p>
+        </div>
+
+        <div class="hand-title">Dealer's Hand:</div>
+        {% if hide_dealer_card %}
+        <p><strong>Dealer is showing: {{ dealer_cards.0.rank }}</strong></p>
+        {% endif %}
+        <p id="dealer-total" style="font-size: 1.2em; margin-top: 10px;"></p>
+
+        <div class="card-container" id="dealer-hand">
+            {% for card in dealer_cards %}
+            <div class="card{% if forloop.counter != 1 %} hidden{% endif %}">
+                <div class="top-left">{{ card.rank }}<br>{{ card.suit }}</div>
+                <div class="bottom-right">{{ card.rank }}<br>{{ card.suit }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="hand-title">Your Hand:</div>
+        <p id="your-total" style="font-size: 1.2em; margin-top: 10px;"></p>
+        <div class="card-container" id="player-hand">
+            {% for card in player_cards %}
+            <div class="card">
+                <div class="top-left">{{ card.rank }}<br>{{ card.suit }}</div>
+                <div class="bottom-right">{{ card.rank }}<br>{{ card.suit }}</div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <form method="post" action="{% url 'game:play_hand' %}">
+            {% csrf_token %}
+            <input type="submit" name="action" value="Hit">
+            <input type="submit" name="action" value="Stand">
+        </form>
+    </div>
+</div>

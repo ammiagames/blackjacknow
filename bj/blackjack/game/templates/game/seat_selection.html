@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+
+<head>
+    <meta charset="UTF-8">
+    <title>Blackjack - Select Seat</title>
+    <link rel="stylesheet" href="{% static 'game/css/start_hand.css' %}">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Trebuchet MS', sans-serif;
+            background: linear-gradient(to bottom, #003300, #001a00);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: gold;
+            margin-bottom: 2rem;
+        }
+
+        .table-container {
+            position: relative;
+            width: 1000px;
+            height: 500px;
+            background: radial-gradient(ellipse at bottom, #006400 0%, #013220 100%);
+            border-top-left-radius: 500px;
+            border-top-right-radius: 500px;
+            border: 10px solid gold;
+            border-bottom: none;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(255, 215, 0, 0.4);
+            transform: rotate(180deg);
+        }
+
+        .seat-button {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: crimson;
+            color: white;
+            border: 4px solid white;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            transform: rotate(180deg);
+        }
+
+        .seat-button:hover {
+            transform: scale(1.1) rotate(180deg);
+            box-shadow: 0 0 15px gold;
+        }
+
+        .seat-button:nth-child(3) {
+            top: 50%;
+            left: 12%;
+        }
+
+        .seat-button:nth-child(2) {
+            top: 20%;
+            left: 45%;
+        }
+
+        .seat-button:nth-child(1    ) {
+            top: 50%;
+            right: 12%;
+        }
+
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .prompt-box {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 10px;
+            width: 300px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            color: black;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.5rem;
+            box-sizing: border-box;
+        }
+
+        .prompt-box button {
+            padding: 0.5rem 1rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Select Your Seat</h1>
+    <div class="table-container">
+        <button type="button" class="seat-button" onclick="showSeatPrompt('1')">1</button>
+        <button type="button" class="seat-button" onclick="showSeatPrompt('2')">2</button>
+        <button type="button" class="seat-button" onclick="showSeatPrompt('3')">3</button>
+    </div>
+
+    <!-- Modal for chip input -->
+    <div id="seat-prompt-overlay" class="overlay hidden">
+        <div class="prompt-box">
+            <form method="POST" action="{% url 'game:join_seat' %}">
+                {% csrf_token %}
+                <input type="hidden" name="seat_id" id="seat-input">
+                <label for="chip_amount">Enter chip amount:</label>
+                <input type="number" name="chip_amount" id="chip_amount" min="1" required>
+                <div>
+                    <button type="submit">Join Seat</button>
+                    <button type="button" onclick="closePrompt()">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showSeatPrompt(seatId) {
+            document.getElementById("seat-input").value = seatId;
+            document.getElementById("seat-prompt-overlay").classList.remove("hidden");
+        }
+
+        function closePrompt() {
+            document.getElementById("seat-prompt-overlay").classList.add("hidden");
+        }
+    </script>
+</body>
+
+</html>
